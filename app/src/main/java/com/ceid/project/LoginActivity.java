@@ -4,19 +4,22 @@ import android.content.Intent;
 import android.os.StrictMode;
 import android.util.Log;
 import android.util.Patterns;
-import android.support.design.widget.TextInputLayout;
-import android.support.v7.app.AppCompatActivity;
+
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.EditText;
+import androidx.appcompat.app.AppCompatActivity;
+
+
+import com.google.android.material.textfield.TextInputLayout;
+
 import java.util.HashMap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import java.util.ArrayList;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -30,6 +33,8 @@ public class LoginActivity extends AppCompatActivity {
     boolean isEmailValid, isPasswordValid;
     TextInputLayout emailError, passError;
     String message="";
+    TextView test;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,6 +55,7 @@ public class LoginActivity extends AppCompatActivity {
         password = (EditText) findViewById(R.id.password);
         login = (Button) findViewById(R.id.login);
         register = (Button) findViewById(R.id.register);
+        //test = (Button) findViewById(R.id.test);
 
         emailError = (TextInputLayout) findViewById(R.id.emailError);
         passError = (TextInputLayout) findViewById(R.id.passError);
@@ -57,62 +63,64 @@ public class LoginActivity extends AppCompatActivity {
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SetValidation();
+                if (NoErrorValidation()){
                 //creating request handler object
-                RequestHandler requestHandler = new RequestHandler();
+                    RequestHandler requestHandler = new RequestHandler();
 
-                //creating request parameters
-                HashMap<String, String> params = new HashMap<>();
-                params.put("email", email.getText().toString());
-                params.put("password", password.getText().toString());
-                params.put("type", "login");
+                    //creating request parameters
+                    HashMap<String, String> params = new HashMap<>();
+                    params.put("email", email.getText().toString());
+                    params.put("password", password.getText().toString());
+                    params.put("type", "login");
 
-                //returing the response
-                String returnValue=requestHandler.sendPostRequest(params);
-                Log.i( "Debug",returnValue);
-                try {
+                    //returing the response
+                    String returnValue=requestHandler.sendPostRequest(params);
+                    Log.i( "Debug",returnValue);
+                    try {
 
-                    JSONObject jsonObj = new JSONObject(returnValue);
-                    String error = jsonObj.getString("error");
-                    Log.i("Debug", error);
-                    if (error.equals("true")) {
-                        Toast.makeText(getApplicationContext(), "Email or Password is incorrect", Toast.LENGTH_SHORT).show();
-                    } else {
+                        JSONObject jsonObj = new JSONObject(returnValue);
+                        String error = jsonObj.getString("error");
+                        Log.i("Debug", error);
+                        if (error.equals("true")) {
+                            Toast.makeText(getApplicationContext(), "Email or Password is incorrect", Toast.LENGTH_SHORT).show();
+                        } else {
 
-                        categories = jsonObj.getJSONArray("categories");
-                        services = jsonObj.getJSONArray("services");
-                        user= jsonObj.getJSONObject("user");
-                        //services.toString();
-                        //JSONObject c = services.getJSONObject(0);
-                        //String image = c.getString("image");
-                        Log.i("Debug", services.toString());
-                        Log.i("Debug", categories.toString());
-                        Intent intent = new Intent(getApplicationContext(), CategoriesTable.class);
-                        intent.putExtra("categories", "{\"categories\":"+categories.toString()+"}");
-                        intent.putExtra("services", "{\"services\":"+services.toString()+"}");
-                        intent.putExtra("user", user.toString());
-                        startActivity(intent);
-                        finish();
+                            categories = jsonObj.getJSONArray("categories");
+                            services = jsonObj.getJSONArray("services");
+                            user= jsonObj.getJSONObject("user");
+                            //services.toString();
+                            //JSONObject c = services.getJSONObject(0);
+                            //String image = c.getString("image");
+                            Log.i("Debug", services.toString());
+                            Log.i("Debug", categories.toString());
+                            Intent intent = new Intent(getApplicationContext(), TableOfDataTemp.class);
+                            intent.putExtra("categories", "{\"categories\":"+categories.toString()+"}");
+                            intent.putExtra("services", "{\"services\":"+services.toString()+"}");
+                            intent.putExtra("user", user.toString());
+                            startActivity(intent);
+                            finish();
+                        }
+                        } catch( final JSONException e){
+                            Log.e("Debug", "Json parsing error: " + e.getMessage());
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(),
+                                            "Json parsing error: " + e.getMessage(),
+                                            Toast.LENGTH_LONG).show();
+                                }
+                            });
+
+                        }
+
                     }
-                    } catch( final JSONException e){
-                        Log.e("Debug", "Json parsing error: " + e.getMessage());
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(getApplicationContext(),
-                                        "Json parsing error: " + e.getMessage(),
-                                        Toast.LENGTH_LONG).show();
-                            }
-                        });
-
-                    }
-
-            }
+                }
         });
 
         register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 // redirect to RegisterActivity
                 Intent intent = new Intent(getApplicationContext(), RegisterActivity.class);
                 startActivity(intent);
@@ -123,21 +131,26 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // redirect to RegisterActivity
-                Intent intent = new Intent(getApplicationContext(), ServiceTable.class);
-                intent.putExtra("services", "\"services\":"+services.toString());
+                testUser testUser=new testUser();
+                testUser.setUsername("test");
+                Intent intent = new Intent(getApplicationContext(), TableOfData.class);
+                intent.putExtra("services", testUser.getUsername());
                 startActivity(intent);
             }
         });*/
     }
 
-    public void SetValidation() {
+    public boolean NoErrorValidation() {
+        Boolean noErrors=true;
         // Check for a valid email address.
         if (email.getText().toString().isEmpty()) {
             emailError.setError(getResources().getString(R.string.email_error));
             isEmailValid = false;
+            noErrors= false;
         } else if (!Patterns.EMAIL_ADDRESS.matcher(email.getText().toString()).matches()) {
             emailError.setError(getResources().getString(R.string.error_invalid_email));
             isEmailValid = false;
+            noErrors= false;
         } else  {
             isEmailValid = true;
             emailError.setErrorEnabled(false);
@@ -147,17 +160,17 @@ public class LoginActivity extends AppCompatActivity {
         if (password.getText().toString().isEmpty()) {
             passError.setError(getResources().getString(R.string.password_error));
             isPasswordValid = false;
+            noErrors= false;
         } else if (password.getText().length() < 6) {
             passError.setError(getResources().getString(R.string.error_invalid_password));
             isPasswordValid = false;
+            noErrors= false;
         } else  {
             isPasswordValid = true;
             passError.setErrorEnabled(false);
         }
 
-        if (isEmailValid && isPasswordValid) {
-            Toast.makeText(getApplicationContext(), "Successfully", Toast.LENGTH_SHORT).show();
-        }
+        return noErrors;
 
     }
 
