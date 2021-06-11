@@ -16,7 +16,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class RequestHandler {
 
-    public static final String URL_REGISTER = "http://192.168.1.159/ceidproject/api.php";
+    public static final String URL_REGISTER = "http://192.168.1.16/ceidproject/api.php";
     //this method will send a post request to the specified url
     //in this app we are using only post request
     //in the hashmap we have the data to be sent to the server in keyvalue pairs
@@ -38,8 +38,10 @@ public class RequestHandler {
 
             BufferedWriter writer = new BufferedWriter(
                     new OutputStreamWriter(os, "UTF-8"));
+
             writer.write(getPostDataString(postDataParams));
 
+            System.out.println("writer "+os);
             writer.flush();
             writer.close();
             os.close();

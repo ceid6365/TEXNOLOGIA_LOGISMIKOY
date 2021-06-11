@@ -14,82 +14,79 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.EditText;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
 
-public class RegisterActivity extends AppCompatActivity {
+public class User extends AppCompatActivity {
 
     EditText name, email, password,lastname,username,bio;
-    Button register;
+    Button update;
     TextView login,messageView;
     boolean isNameValid, isEmailValid, isPhoneValid, isPasswordValid;
     TextInputLayout nameError, emailError, passError;
-
-    Spinner rank,sex;
+    Spinner rank;
+    String emailString="";
+    JSONObject jsonObj = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_register);
-        final Spinner spinner1 = (Spinner) findViewById(R.id.rank);
-// Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<CharSequence> adapter1 = ArrayAdapter.createFromResource(this,
-                R.array.professions, android.R.layout.simple_spinner_item);
-// Specify the layout to use when the list of choices appears
-        adapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-// Apply the adapter to the spinner
-        spinner1.setAdapter(adapter1);
-
-        final Spinner spinner2 = (Spinner) findViewById(R.id.sex);
-// Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<CharSequence> adapter2 = ArrayAdapter.createFromResource(this,
-                R.array.gender, android.R.layout.simple_spinner_item);
-// Specify the layout to use when the list of choices appears
-        adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-// Apply the adapter to the spinner
-        spinner2.setAdapter(adapter2);
+        setContentView(R.layout.activity_personal_panel);
 
         name = (EditText) findViewById(R.id.name);
         lastname = (EditText) findViewById(R.id.lastname);
-        email = (EditText) findViewById(R.id.email);
         username= (EditText) findViewById(R.id.username);
         password = (EditText) findViewById(R.id.password);
         bio = (EditText) findViewById(R.id.bio);
         login = (Button) findViewById(R.id.login);
-        register = (Button) findViewById(R.id.register);
+        update = (Button) findViewById(R.id.update);
         nameError = (TextInputLayout) findViewById(R.id.nameError);
         emailError = (TextInputLayout) findViewById(R.id.emailError);
 
         passError = (TextInputLayout) findViewById(R.id.passError);
+        Bundle extras = getIntent().getExtras();
+        Log.i("Debug", extras.toString());
+        if (extras != null) {
+            final String userString = extras.getString("user");
+            Log.i("Debug", userString);
 
-        register.setOnClickListener(new View.OnClickListener() {
+            try {
+                jsonObj = new JSONObject(userString);
+                //Log.i("Debug", jsonObj.toString());
+                String nameString = jsonObj.getString("name");
+                Log.i("Debug", nameString);
+                String lastnameString = jsonObj.getString("lastname");
+                String usernameString = jsonObj.getString("username");
+                emailString=jsonObj.getString("email");
+                name.setText(nameString);
+                lastname.setText(lastnameString);
+                username.setText(usernameString);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+        update.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 SetValidation();
                 RequestHandler requestHandler = new RequestHandler();
-                String tempString= spinner1.getSelectedItem().toString();
-                int rankInteger=0;
-                if (tempString.equals("Customer")) {
-                    rankInteger=1;
-                }else if (tempString.equals("Business"))
-                {
-                    rankInteger=2;
-                }else if (tempString.equals("Admin")){
-                    rankInteger=3;
-                }
+                //System.out.println(rank.getSelectedItem().toString());
                 //creating request parameters
                 HashMap<String, String> params = new HashMap<>();
-                params.put("email", email.getText().toString());
+                //params.put("email", email.getText().toString());
                 params.put("password", password.getText().toString());
                 params.put("name", name.getText().toString());
                 params.put("lastname", lastname.getText().toString());
                 params.put("username", username.getText().toString());
                 params.put("bio", bio.getText().toString());
-                params.put("gender",spinner2.getSelectedItem().toString());
-                params.put("rank", String.valueOf(rankInteger));
-                params.put("type", "register");
+                params.put("email", emailString);
+                //params.put("rank", "1");
+                params.put("type", "update");
 
                 //returing the response
                 String returnValue = requestHandler.sendPostRequest(params);
@@ -135,22 +132,11 @@ public class RegisterActivity extends AppCompatActivity {
             nameError.setErrorEnabled(false);
         }
 
-        // Check for a valid email address.
-        if (email.getText().toString().isEmpty()) {
-            emailError.setError(getResources().getString(R.string.email_error));
-            isEmailValid = false;
-        } else if (!Patterns.EMAIL_ADDRESS.matcher(email.getText().toString()).matches()) {
-            emailError.setError(getResources().getString(R.string.error_invalid_email));
-            isEmailValid = false;
-        } else  {
-            isEmailValid = true;
-            emailError.setErrorEnabled(false);
-        }
 
 
 
         // Check for a valid password.
-        if (password.getText().toString().isEmpty()) {
+        /*if (password.getText().toString().isEmpty()) {
             passError.setError(getResources().getString(R.string.password_error));
             isPasswordValid = false;
         } else if (password.getText().length() < 6) {
@@ -164,7 +150,7 @@ public class RegisterActivity extends AppCompatActivity {
         if (isNameValid && isEmailValid && isPhoneValid && isPasswordValid) {
             Toast.makeText(getApplicationContext(), "Successfully", Toast.LENGTH_SHORT).show();
         }
-
+        */
     }
 
 }
